@@ -2,21 +2,40 @@ import os
 import time
 import collections
 
+'''
+Ensure that kernel modules required are loaded
+'''
+
 os.system('modprobe w1-gpio')
 os.system('modprobe w1-therm')
 
+'''
+Sensor turns up here on my rpi
+'''
+
 temp_sensor = '/sys/bus/w1/devices/28-0000050577cc/w1_slave'
+
+'''
+Fancy python collection which only keeps a max number of items,
+pushes them off the end of the queue when full
+'''
 
 temps = collections.deque(maxlen=96)
 
 jsfile = 'temps.js'
 
+'''
+Get the contents of the file representing the temperature
+'''
 def temp_raw():
     f = open(temp_sensor, 'r')
     lines = f.readlines()
     f.close()
     return lines
 
+'''
+Turn the value in the file into a nicer value
+'''
 def read_temp():
     lines = temp_raw()
     while lines[0].strip()[-3:] != 'YES':
@@ -27,7 +46,9 @@ def read_temp():
         temp_string = lines[1].strip()[temp_output+2:]
         temp_c = float(temp_string) / 1000.0
         return temp_c
-
+'''
+Create the javascript for highcharts, a bit hacky...
+'''
 def createjs():
     x_axis = []
     y_axis = []
